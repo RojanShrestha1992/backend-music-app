@@ -26,4 +26,30 @@ async function authArtist(req, res, next) {
 }
 }
 
-module.exports = {authArtist}
+
+
+async function authUser(req,res, next){
+    const token = req.cookies.token;
+    if(!token){
+        return res.status(401).json({  message:"Unauthorized"})
+    }
+    try{
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if(decoded.role !== "user"){
+            return res.status(403).json({
+                message:"Forbidden: Only users can access this resource"
+            })
+        }
+        req.user = decoded;
+        next()
+    }
+    catch(err){
+        console.log(err);
+        return res.status(401).json({
+            message:"Invalid Token"})
+    }
+}
+
+
+
+module.exports = {authArtist, authUser}
